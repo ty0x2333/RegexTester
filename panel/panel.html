@@ -1,0 +1,164 @@
+<link rel="import" href="packages://ui-kit/widget/input/input.html">
+<link rel="import" href="packages://ui-kit/widget/label/label.html">
+<link rel="import" href="packages://ui-kit/widget/checkbox/checkbox.html">
+<link rel="import" href="packages://ui-kit/widget/button/button.html">
+<link rel="import" href="packages://ui-kit/widget/textarea/textarea.html">
+<link rel="import" href="packages://ui-kit/widget/section/section.html">
+
+<dom-module id="regex-tester">
+    <style>
+        :host {
+            padding: 15px;
+            overflow-y:scroll;
+        }
+
+        editor-checkbox {
+            margin: 10px;
+            vertical-align: middle;
+        }
+        
+        editor-button {
+            margin: 5px 10px;
+            min-width: 110px;
+        }
+        
+        editor-textarea {
+            margin: 10px 0px;
+        }
+        
+    </style>
+
+    <template>
+        <header><h1>正则表达式测试工具</h1></header>
+        <content class="layout vertical">
+            <editor-textarea id="testTextArea" placeholder="在此输入待匹配文本..."></editor-textarea>
+            
+            <editor-input class="big input" placeholder="正则表达式" value="{{regex}}"></editor-input>
+            <div class="layout horizontal center end-justified">
+                <editor-checkbox id="globalMatch" class="toggle green" checked="true">全局搜索</editor-checkbox>
+                
+                <editor-checkbox id="ignoreCase" class="toggle green" checked="true">忽略大小写</editor-checkbox>
+                
+                <editor-button class="big green" on-tap="_onMatchButtonClicked">测试匹配</editor-button>
+            </div>
+                
+            <editor-textarea id="matchResultTextArea" readonly="true" placeholder="匹配结果..."></editor-textarea>
+            
+            
+            <div class="layout horizontal center">
+                <editor-textarea class="flex" id="replaceTextArea" placeholder="替换文本..."></editor-textarea>
+                
+                <editor-button class="big green" on-tap="_onReplaceButtonClicked">替换</editor-button>
+            </div>
+            
+            <editor-textarea id="replaceResultTextArea" readonly="true" placeholder="替换结果..."></editor-textarea>
+            
+            <editor-section class="huge" text="常用正则表达式">
+                <ul>
+                    <editor-section class="large" folded="true" text="匹配中文字符">
+                        <h3>[\u4e00-\u9fa5]</h3>
+                    </editor-section>
+                    <editor-section class="large" folded="true" text="匹配双字节字符(包括汉字在内)">
+                        <h3>[^\x00-\xff]</h3>
+                    </editor-section>
+                    <editor-section class="large" folded="true" text="匹配空白行">
+                        <h3>\n\s*\r</h3>
+                    </editor-section>
+                    <editor-section class="large" folded="true" text="匹配Email地址">
+                        <h3>[\w!#$%&amp;'*+/=?^_`{|}~-]+(?:\.[\w!#$%&amp;'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?</h3>
+                    </editor-section>
+                    <editor-section class="large" folded="true" text="匹配网址URL">
+                        <h3>[a-zA-z]+://[^\s]*</h3>
+                    </editor-section>
+                    <editor-section class="large" folded="true" text="匹配国内电话号码">
+                        <h3>\d{3}-\d{8}|\d{4}-\{7,8}</h3>
+                    </editor-section>
+                    <editor-section class="large" folded="true" text="匹配腾讯QQ号">
+                        <h3>[1-9][0-9]{4,}</h3>
+                    </editor-section>
+                    <editor-section class="large" folded="true" text="匹配中国邮政编码">
+                        <h3>[1-9]\d{5}(?!\d)</h3>
+                    </editor-section>
+                    <editor-section class="large" folded="true" text="匹配18位身份证号">
+                        <h3>^(\d{6})(\d{4})(\d{2})(\d{2})(\d{3})([0-9]|X)$</h3>
+                    </editor-section>
+                    <editor-section class="large" folded="true" text="匹配(年-月-日)格式日期">
+                        <h3>([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8])))</h3>
+                    </editor-section>
+                    <editor-section class="large" folded="true" text="匹配正整数">
+                        <h3>^[1-9]\d*$</h3>
+                    </editor-section>
+                    <editor-section class="large" folded="true" text="匹配负整数">
+                        <h3>^-[1-9]\d*$</h3>
+                    </editor-section>
+                    <editor-section class="large" folded="true" text="匹配整数">
+                        <h3>^-?[1-9]\d*$</h3>
+                    </editor-section>
+                    <editor-section class="large" folded="true" text="匹配非负整数(正整数 + 0)">
+                        <h3>^[1-9]\d*|0$</h3>
+                    </editor-section>
+                    <editor-section class="large" folded="true" text="匹配非正整数(负整数 + 0)">
+                        <h3>^-[1-9]\d*|0$</h3>
+                    </editor-section>
+                    <editor-section class="large" folded="true" text="匹配正浮点数">
+                        <h3>^[1-9]\d*\.\d*|0\.\d*[1-9]\d*$</h3>
+                    </editor-section>
+                    <editor-section class="large" folded="true" text="匹配负浮点数">
+                        <h3>^-[1-9]\d*\.\d*|-0\.\d*[1-9]\d*$</h3>
+                    </editor-section>
+                </ul>
+            </editor-section>
+        </content>
+    </template>
+
+  <script>
+    Editor.polymerPanel('regex-tester', {
+        ready () {
+            this.regex = null;
+            this.matchResult = null;
+        },
+        
+        _onMatchButtonClicked: function (event) {
+            // Editor.log('match!');
+            // Editor.log(this.regex);
+            this.$.matchResultTextArea.clear();
+            var regex = this._buildRegex();
+
+            // Editor.log('testTextArea: ' + this.$.testTextArea.inputValue);
+            var result = this.$.testTextArea.inputValue.match(regex);
+            // Editor.log('result: ' + result);
+            if (null == result || result.length < 1) {
+                this.$.matchResultTextArea.value = "（没有匹配）";
+                return false;
+            }
+            if (this.$.globalMatch.checked) {
+                var strResult = "共找到 " + result.length + " 处匹配：\r\n";
+                for (var i=0;i < result.length;++i) {
+                    strResult = strResult + result[i] + "\r\n";
+                }
+                this.$.matchResultTextArea.value = strResult;
+            } else {
+                this.$.matchResultTextArea.value = "匹配位置：" + regex.lastIndex + "\r\n匹配结果：" + result[0];
+            }
+            return true;
+        },
+        
+        _onReplaceButtonClicked: function() {
+        	var content = this.$.testTextArea.inputValue;
+        	var regex = this._buildRegex();
+            this.$.replaceResultTextArea.value = content.replace(regex, this.$.replaceTextArea.inputValue);
+        },
+        
+        _buildRegex: function() {
+            var option = "";
+            if (this.$.globalMatch.checked) {
+                option = "g";
+            }
+            if (this.$.ignoreCase.checked) {
+                option += "i";
+            }
+        	return new RegExp(this.regex, op);
+        }
+    });
+  </script>
+</dom-module>
